@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PlayTile from './PlayTile';
 import AddPlayModal, { PlayData } from './AddPlayModal';
 import { Play } from '@/types/play';
@@ -17,9 +17,9 @@ export default function PlayList() {
 
   useEffect(() => {
     loadPlays();
-  }, []);
+  }, [loadPlays]);
 
-  async function loadPlays() {
+  const loadPlays = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await getPlays();
@@ -34,7 +34,7 @@ export default function PlayList() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [toast]);
 
   const handleAddPlay = async (playData: PlayData) => {
     try {
