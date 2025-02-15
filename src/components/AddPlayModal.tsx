@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Moon, X, ChevronDown, ChevronUp, User } from 'lucide-react';
-import Image from 'next/image';
-import { cn } from '../lib/utils';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 

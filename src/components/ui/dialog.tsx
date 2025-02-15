@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { cn } from "@/lib/utils"
 
 const Dialog = DialogPrimitive.Root
 
@@ -15,7 +16,10 @@ const DialogOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+    className={cn(
+      "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm",
+      className
+    )}
     {...props}
   />
 ))

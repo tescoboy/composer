@@ -57,7 +57,6 @@ export default function PlayTile({
   date,
   rating,
   image,
-  person,
   variant = 'default',
 }: PlayTileProps) {
   const [imageError, setImageError] = useState(false);

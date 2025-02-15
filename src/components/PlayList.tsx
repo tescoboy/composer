@@ -8,27 +8,6 @@ import { getPlays, addPlay } from '@/services/plays';
 import { useToast } from '@/components/ui/use-toast';
 import { Switch } from '@/components/ui/switch';
 
-// Sample data moved to client component
-const samplePlays: Play[] = [
-  {
-    id: 1,
-    title: "Hamlet",
-    theatre: "National Theatre",
-    date: new Date('2024-04-15'),
-    rating: 4,
-    imageUrls: ["https://images.unsplash.com/photo-1503095396549-807759245b35?w=800&auto=format&fit=crop"]
-  },
-  {
-    id: 2,
-    title: "The Seagull",
-    theatre: "Young Vic",
-    date: new Date('2024-03-20'),
-    rating: 5,
-    isStandingOvation: true,
-    imageUrls: ["https://images.unsplash.com/photo-1507924538820-ede94a04019d?w=800&auto=format&fit=crop"]
-  }
-];
-
 export default function PlayList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [plays, setPlays] = useState<Play[]>([]);
@@ -45,7 +24,8 @@ export default function PlayList() {
       setIsLoading(true);
       const data = await getPlays();
       setPlays(data);
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to load plays:', err);
       toast({
         title: 'Error',
         description: 'Failed to load plays',
@@ -58,22 +38,15 @@ export default function PlayList() {
 
   const handleAddPlay = async (playData: PlayData) => {
     try {
-      const newPlay = await addPlay({
-        title: playData.title,
-        theatre: playData.theatre,
-        date: new Date(playData.date),
-        rating: playData.rating,
-        image_urls: playData.imageUrls.filter(url => url.trim() !== ''),
-        is_standing_ovation: playData.isStandingOvation,
-      });
-      
+      const newPlay = await addPlay(playData);
       setPlays([...plays, newPlay]);
       setIsModalOpen(false);
       toast({
         title: 'Success',
         description: 'Play added successfully',
       });
-    } catch (error) {
+    } catch (err) {
+      console.error('Failed to add play:', err);
       toast({
         title: 'Error',
         description: 'Failed to add play',
