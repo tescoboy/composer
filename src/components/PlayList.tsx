@@ -15,10 +15,6 @@ export default function PlayList() {
   const [showShame, setShowShame] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadPlays();
-  }, [loadPlays]);
-
   const loadPlays = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -35,6 +31,10 @@ export default function PlayList() {
       setIsLoading(false);
     }
   }, [toast]);
+
+  useEffect(() => {
+    loadPlays();
+  }, [loadPlays]);
 
   const handleAddPlay = async (playData: PlayData) => {
     try {
