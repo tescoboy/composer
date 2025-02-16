@@ -10,6 +10,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { toast } from '@/components/ui/use-toast';
 import { createClient } from '@/lib/supabase';
 import MoonRating from '@/components/ui/moon-rating';
+import { Play } from '@/types/play';
 
 interface AddPlayModalProps {
   play?: Play | null;
