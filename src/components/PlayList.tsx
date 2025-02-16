@@ -38,12 +38,11 @@ export default function PlayList() {
 
   const handleAddPlay = async (playData: PlayData) => {
     try {
-      // Transform PlayData to match the Play type
       const playToAdd = {
         name: playData.title,
         theatre: playData.theatre,
         date: playData.date,
-        rating: playData.isStandingOvation ? 'Standing Ovation' : playData.rating,
+        rating: playData.isStandingOvation ? 'Standing Ovation' : playData.rating.toString(),
         image: playData.imageUrls[0] || undefined,
         isStandingOvation: playData.isStandingOvation
       };
@@ -82,23 +81,22 @@ export default function PlayList() {
   const hallOfFamePlays = plays
     .filter(play => {
       if (play.rating === 'Standing Ovation') return true;
-      const rating = parseFloat(play.rating);
-      return rating >= 5;
+      const rating = Number(play.rating);
+      return !isNaN(rating) && rating >= 5;
     })
     .sort((a, b) => {
-      // Standing Ovation should be at the top
       if (a.rating === 'Standing Ovation') return -1;
       if (b.rating === 'Standing Ovation') return 1;
-      return parseFloat(b.rating) - parseFloat(a.rating);
+      return Number(b.rating) - Number(a.rating);
     });
 
   const hallOfShamePlays = plays
     .filter(play => {
-      const rating = parseFloat(play.rating);
-      return rating > 0 && rating <= 2;
+      const rating = Number(play.rating);
+      return !isNaN(rating) && rating > 0 && rating <= 2;
     })
     .sort((a, b) => {
-      const ratingDiff = parseFloat(a.rating) - parseFloat(b.rating);
+      const ratingDiff = Number(a.rating) - Number(b.rating);
       if (ratingDiff === 0) {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       }

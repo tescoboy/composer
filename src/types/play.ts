@@ -1,10 +1,10 @@
 export interface Play {
-  id: string;
+  id: number;
   created_at?: string;
   name: string;
   theatre: string;
   date: string;
-  rating: string | number;
+  rating: string;
   image?: string;
   comments?: string;
   synopsis?: string;

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { Play } from '@/types/play';
 
-export async function getPlays() {
+export async function getPlays(): Promise<Play[]> {
   const { data, error } = await supabase
     .from('plays')
     .select('*')
@@ -11,7 +11,7 @@ export async function getPlays() {
   return data as Play[];
 }
 
-export async function addPlay(play: Omit<Play, 'id' | 'created_at'>) {
+export async function addPlay(play: Omit<Play, 'id' | 'created_at'>): Promise<Play> {
   const { data, error } = await supabase
     .from('plays')
     .insert([play])
@@ -19,10 +19,10 @@ export async function addPlay(play: Omit<Play, 'id' | 'created_at'>) {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as Play;
 }
 
-export async function updatePlay(id: number, play: Partial<Play>) {
+export async function updatePlay(id: number, play: Partial<Play>): Promise<Play> {
   const { data, error } = await supabase
     .from('plays')
     .update(play)
@@ -34,7 +34,7 @@ export async function updatePlay(id: number, play: Partial<Play>) {
   return data as Play;
 }
 
-export async function deletePlay(id: number) {
+export async function deletePlay(id: number): Promise<void> {
   const { error } = await supabase
     .from('plays')
     .delete()
