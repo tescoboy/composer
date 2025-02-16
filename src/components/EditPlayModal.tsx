@@ -1,270 +1,180 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Moon, X, ChevronDown, ChevronUp, User, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Play } from '@/types/play';
-import { useToast } from './ui/use-toast';
-import { updatePlay, deletePlay } from '@/services/plays';
-import ImageUrlInputs from './ImageUrlInputs';
+import { toast } from '@/components/ui/use-toast';
+import MoonRating from './ui/moon-rating';
+import { Trash2, Plus, X } from 'lucide-react';
 
 interface EditPlayModalProps {
   play: Play;
-  isOpen: boolean;
   onClose: () => void;
-  onUpdate: (updatedPlay: Play) => void;
+  onSubmit: (play: Play) => void;
   onDelete: (id: number) => void;
 }
 
-interface PlayData {
-  id: number;
-  name: string;
-  theatre: string;
-  date: string;
-  rating: string;
-  isStandingOvation: boolean;
-  image?: string | null;
-  image2?: string | null;
-  image3?: string | null;
-  image4?: string | null;
-  image5?: string | null;
-  synopsis?: string | null;
-}
+export default function EditPlayModal({ play, onClose, onSubmit, onDelete }: EditPlayModalProps) {
+  const [formData, setFormData] = useState({
+    name: play.name,
+    theatre: play.theatre,
+    date: play.date,
+    rating: play.rating,
+    isStandingOvation: play.isStandingOvation,
+    image1: play.image1 || '',
+    image2: play.image2 || '',
+    image3: play.image3 || '',
+    image4: play.image4 || '',
+    image5: play.image5 || '',
+  });
 
-const THEATRE_OPTIONS = [
-  'National Theatre',
-  'Old Vic',
-  'Young Vic',
-  'Almeida',
-  'Yard',
-  'Royal Court',
-  'Shakespeare\'s Globe',
-];
-
-export default function EditPlayModal({ 
-  play, 
-  isOpen, 
-  onClose, 
-  onUpdate,
-  onDelete 
-}: EditPlayModalProps) {
-  const [playData, setPlayData] = useState<PlayData>(play);
-  const [showImages, setShowImages] = useState(false);
-  const { toast } = useToast();
-
-  const [imageUrlsState, setImageUrlsState] = useState<string[]>([
-    play.image,
-    play.image2,
-    play.image3,
-    play.image4,
-    play.image5,
-  ].filter(Boolean) as string[]);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const updatedPlay = await updatePlay(play.id, playData);
-      onUpdate(updatedPlay);
-      toast({
-        title: 'Success',
-        description: 'Play updated successfully',
-      });
-      onClose();
-    } catch (err) {
-      console.error('Failed to update play:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to update play',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this play?')) return;
-    
-    try {
-      await deletePlay(play.id);
-      onDelete(play.id);
-      toast({
-        title: 'Success',
-        description: 'Play deleted successfully',
-      });
-      onClose();
-    } catch (err) {
-      console.error('Failed to delete play:', err);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete play',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  // Function to update image URLs
-  const updateImageUrls = (newUrls: string[]) => {
-    setImageUrlsState(newUrls);
-    const [image1, image2, image3, image4, image5] = [...newUrls, '', '', '', '', ''];
-    setPlayData(prev => ({
+  const handleImageChange = (index: number, value: string) => {
+    setFormData(prev => ({
       ...prev,
-      image: image1,
-      image2: image2,
-      image3: image3,
-      image4: image4,
-      image5: image5,
+      [`image${index + 1}`]: value
     }));
   };
 
+  const handleDeleteImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [`image${index + 1}`]: ''
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      onSubmit({
+        ...play,
+        ...formData,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update play",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeletePlay = () => {
+    if (window.confirm('Are you sure you want to delete this play?')) {
+      onDelete(play.id);
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Play</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        <form onSubmit={handleSave} className="p-4 space-y-4">
-          <div>
-            <Label>Play Title *</Label>
-            <input
-              type="text"
-              required
-              value={playData.name}
-              onChange={(e) => setPlayData({ ...playData, name: e.target.value })}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <Label>Theatre *</Label>
-            <input
-              type="text"
-              required
-              value={playData.theatre}
-              onChange={(e) => setPlayData({ ...playData, theatre: e.target.value })}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              list="theatre-options"
-            />
-            <datalist id="theatre-options">
-              {THEATRE_OPTIONS.map((theatre) => (
-                <option key={theatre} value={theatre} />
-              ))}
-            </datalist>
-          </div>
-
-          <div>
-            <Label>Date *</Label>
-            <input
-              type="date"
-              required
-              value={playData.date}
-              onChange={(e) => setPlayData({ ...playData, date: e.target.value })}
-              className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
-          </div>
-
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowImages(!showImages)}
-              className="flex items-center justify-between w-full p-2 text-left text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600"
-            >
-              <span>Images (Optional)</span>
-              {showImages ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Edit Play</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Info */}
+          <div className="space-y-4">
+            <div>
+              <Label>Name</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
             
-            {showImages && (
-              <div className="mt-2">
-                <ImageUrlInputs
-                  urls={imageUrlsState}
-                  onChange={updateImageUrls}
-                />
-              </div>
-            )}
+            <div>
+              <Label>Theatre</Label>
+              <Input
+                value={formData.theatre}
+                onChange={(e) => setFormData(prev => ({ ...prev, theatre: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div>
+              <Label>Date</Label>
+              <Input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                required
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
+          {/* Rating */}
+          <div>
             <Label>Rating</Label>
             <div className="flex items-center gap-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => {
-                      const newRating = (index + 1).toString();
-                      setPlayData({ ...playData, rating: newRating, isStandingOvation: false });
-                    }}
-                    className={cn(
-                      "p-1 rounded-full transition-colors",
-                      Number(playData.rating) > index 
-                        ? "text-yellow-400" 
-                        : "text-gray-300"
-                    )}
-                  >
-                    <Moon className="w-6 h-6" />
-                  </button>
-                ))}
-              </div>
+              <MoonRating 
+                value={formData.isStandingOvation ? 'standing-ovation' : formData.rating ? Number(formData.rating) : null}
+                onChange={(value) => {
+                  if (value === 'standing-ovation') {
+                    setFormData(prev => ({ ...prev, isStandingOvation: true, rating: '5' }));
+                  } else {
+                    setFormData(prev => ({ ...prev, isStandingOvation: false, rating: value.toString() }));
+                  }
+                }}
+                size="lg"
+              />
               <button
                 type="button"
-                onClick={() => {
-                  setPlayData({ 
-                    ...playData, 
-                    rating: 'Standing Ovation',
-                    isStandingOvation: true 
-                  });
-                }}
-                className={cn(
-                  "p-1 rounded-full transition-colors",
-                  playData.rating === "Standing Ovation"
-                    ? "text-yellow-400"
-                    : "text-gray-300"
-                )}
+                onClick={() => setFormData(prev => ({ ...prev, rating: '', isStandingOvation: false }))}
+                className="text-sm text-gray-500 hover:text-gray-700"
               >
-                <User className={cn(
-                  "w-6 h-6",
-                  playData.rating === "Standing Ovation" && "animate-bounce-subtle"
-                )} />
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPlayData({ 
-                    ...playData, 
-                    rating: '0',
-                    isStandingOvation: false 
-                  });
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Reset
+                Reset Rating
               </button>
             </div>
           </div>
 
-          <div className="flex justify-between pt-4">
+          {/* Images */}
+          <div className="space-y-4">
+            <Label>Images</Label>
+            {[0,1,2,3,4].map((index) => {
+              const imageUrl = formData[`image${index + 1}` as keyof typeof formData];
+              if (!imageUrl && index > 0 && !formData[`image${index}` as keyof typeof formData]) {
+                return null;
+              }
+              
+              return (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder={`Image URL ${index + 1}`}
+                    value={imageUrl}
+                    onChange={(e) => handleImageChange(index, e.target.value)}
+                  />
+                  {imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(index)}
+                      className="p-2 text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-between">
             <button
               type="button"
-              onClick={handleDelete}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center gap-2"
+              onClick={handleDeletePlay}
+              className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100"
             >
-              <Trash2 className="w-4 h-4" />
-              Delete
+              Delete Play
             </button>
             
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
               >
                 Cancel
               </button>
@@ -272,7 +182,7 @@ export default function EditPlayModal({
                 type="submit"
                 className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
               >
-                Save Changes
+                Update
               </button>
             </div>
           </div>

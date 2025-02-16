@@ -10,13 +10,16 @@ import { useParams, useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
 import MoonRating from '@/components/ui/moon-rating';
 import { format } from 'date-fns';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function PlayReviewPage() {
+  const { user } = useAuth();
   const [play, setPlay] = useState<Play | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const params = useParams();
   const router = useRouter();
+  const isOwner = user?.id === play?.userId;
 
   useEffect(() => {
     const loadPlay = async () => {
@@ -106,10 +109,12 @@ export default function PlayReviewPage() {
           </div>
         </div>
         
-        <PlayReviewHeader 
-          play={play} 
-          onUpdateImages={handleUpdateImages}
-        />
+        {isOwner && (
+          <PlayReviewHeader 
+            play={play} 
+            onUpdateImages={handleUpdateImages}
+          />
+        )}
       </div>
     </article>
   );
