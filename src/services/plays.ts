@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { Play } from '@/types/play';
-import { createClient } from '@/lib/auth-client';
 
 export async function getPlays(): Promise<Play[]> {
   const { data, error } = await supabase
@@ -73,30 +72,15 @@ export const addPlay = async (play: Omit<Play, 'id' | 'created_at'>) => {
 };
 
 export async function updatePlay(id: number, updates: Partial<Play>): Promise<Play> {
-  try {
-    const supabase = createClient();
-    
-    const { data, error } = await supabase
-      .from('plays')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+  const { data, error } = await supabase
+    .from('plays')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
-
-    if (!data) {
-      throw new Error('No data returned from update');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error updating play:', error);
-    throw error;
-  }
+  if (error) throw error;
+  return data;
 }
 
 export async function deletePlay(id: number): Promise<void> {
@@ -109,30 +93,14 @@ export async function deletePlay(id: number): Promise<void> {
 }
 
 export const getPlayById = async (id: number): Promise<Play> => {
-  try {
-    console.log('Fetching play with ID:', id);
-    
-    const { data, error } = await supabase
-      .from('plays')
-      .select('*')  // Just select the play data for now
-      .eq('id', id)
-      .single();
+  const { data, error } = await supabase
+    .from('plays')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-    if (error) {
-      console.error('Supabase error:', error);
-      throw new Error(`Failed to fetch play: ${error.message}`);
-    }
-
-    if (!data) {
-      throw new Error('Play not found');
-    }
-
-    console.log('Fetched play data:', data);
-    return data;
-  } catch (error) {
-    console.error('Error in getPlayById:', error);
-    throw error;
-  }
+  if (error) throw error;
+  return data;
 };
 
 interface ImagePosition {
@@ -146,8 +114,6 @@ export const updatePlayImagePosition = async (
   position: ImagePosition
 ): Promise<boolean> => {
   try {
-    const supabase = createClient();
-    
     console.log('Attempting to update play:', { playId, position });
 
     // Validate inputs

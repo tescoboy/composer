@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -8,13 +8,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const createClient = () => {
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createSupabaseClient(supabaseUrl, supabaseAnonKey, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
     },
   });
 };
+
+// Create a singleton instance for use in services
+export const supabase = createClient();
 
 // Add a simple test function to verify connection
 export const testSupabaseConnection = async () => {

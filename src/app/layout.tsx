@@ -3,9 +3,6 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster"
 import Navigation from "@/components/Navigation";
-import { testSupabaseConnection } from '@/lib/supabase';
-import { cookies } from 'next/headers';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { getSession } from '@/lib/auth-server';
 import { Suspense } from 'react';
@@ -15,11 +12,13 @@ import Loading from './loading';
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+  display: 'swap',
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
