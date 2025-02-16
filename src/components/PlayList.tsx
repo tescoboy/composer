@@ -38,7 +38,17 @@ export default function PlayList() {
 
   const handleAddPlay = async (playData: PlayData) => {
     try {
-      const newPlay = await addPlay(playData);
+      // Transform PlayData to match the Play type
+      const playToAdd = {
+        name: playData.title,
+        theatre: playData.theatre,
+        date: playData.date,
+        rating: playData.isStandingOvation ? 'Standing Ovation' : playData.rating,
+        image: playData.imageUrls[0] || undefined,
+        isStandingOvation: playData.isStandingOvation
+      };
+
+      const newPlay = await addPlay(playToAdd);
       setPlays([...plays, newPlay]);
       setIsModalOpen(false);
       toast({
