@@ -11,13 +11,19 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-  await supabase.auth.getSession();
+  
+  try {
+    await supabase.auth.getSession();
+  } catch (error) {
+    console.error('Middleware error:', error);
+  }
+  
   return res;
 } 

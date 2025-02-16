@@ -16,4 +16,9 @@ export async function getSession() {
     console.error('Error getting session:', error);
     return null;
   }
+}
+
+// Add this function for static pages
+export async function getStaticSession() {
+  return null;
 } 
