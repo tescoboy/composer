@@ -3,6 +3,7 @@ import { Moon, X, ChevronDown, ChevronUp, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import ImageUrlInputs from './ImageUrlInputs';
 
 interface AddPlayModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
     date: new Date().toISOString().split('T')[0],
     rating: 0,
     isStandingOvation: false,
-    imageUrls: ['', '', '', '', ''], // 5 empty strings for up to 5 images
+    imageUrls: [''], // Start with just one empty string
   });
   
   const [showImages, setShowImages] = useState(false);
@@ -56,7 +57,7 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
       date: new Date().toISOString().split('T')[0],
       rating: 0,
       isStandingOvation: false,
-      imageUrls: ['', '', '', '', ''],
+      imageUrls: [''],
     });
     onClose();
   };
@@ -138,21 +139,16 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
             </button>
             
             {showImages && (
-              <div className="mt-2 space-y-2">
-                {playData.imageUrls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="url"
-                      placeholder={`Image URL ${index + 1}`}
-                      value={url}
-                      onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                      className="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    />
-                  </div>
-                ))}
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Enter up to 5 image URLs. The first image will be used as the feature image.
-                </p>
+              <div className="mt-2">
+                <ImageUrlInputs
+                  urls={playData.imageUrls}
+                  onChange={(newUrls) => {
+                    setPlayData({ 
+                      ...playData, 
+                      imageUrls: newUrls 
+                    });
+                  }}
+                />
               </div>
             )}
           </div>
