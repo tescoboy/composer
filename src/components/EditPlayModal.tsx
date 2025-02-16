@@ -45,30 +45,6 @@ export default function EditPlayModal({
     setRating(play.rating);
   }, [play]);
 
-  // Convert play data to array of image URLs
-  const getImageUrls = (play: Play): string[] => {
-    const urls = [
-      play.image,
-      play.image2,
-      play.image3,
-      play.image4,
-      play.image5
-    ];
-    return urls.filter((url): url is string => !!url);
-  };
-
-  // Convert array of URLs back to play data format
-  const setImageUrls = (urls: string[]) => {
-    setPlayData(prev => ({
-      ...prev,
-      image: urls[0] || undefined,
-      image2: urls[1] || undefined,
-      image3: urls[2] || undefined,
-      image4: urls[3] || undefined,
-      image5: urls[4] || undefined,
-    }));
-  };
-
   const [imageUrls, setImageUrlsState] = useState<string[]>(() => {
     const urls = [
       play.image,
@@ -81,13 +57,6 @@ export default function EditPlayModal({
     // Ensure array has enough slots
     return [...urls, ...Array(5 - urls.length).fill('')];
   });
-
-  const handleImageUrlChange = (index: number, value: string) => {
-    const newUrls = [...imageUrls];
-    newUrls[index] = value;
-    setImageUrlsState(newUrls);
-    setImageUrls(newUrls.filter(url => url.trim() !== ''));
-  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

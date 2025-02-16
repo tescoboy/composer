@@ -62,12 +62,6 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
     onClose();
   };
 
-  const handleImageUrlChange = (index: number, value: string) => {
-    const newImageUrls = [...playData.imageUrls];
-    newImageUrls[index] = value;
-    setPlayData({ ...playData, imageUrls: newImageUrls });
-  };
-
   if (!isOpen) return null;
 
   return (
