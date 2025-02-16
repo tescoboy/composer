@@ -10,6 +10,9 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: false
+  },
+  env: {
+    PORT: 3000
   }
 }
 

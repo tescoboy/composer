@@ -1,30 +1,56 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster"
+import Navigation from "@/components/Navigation";
+import { testSupabaseConnection } from '@/lib/supabase';
+import { cookies } from 'next/headers';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { getSession } from '@/lib/auth-server';
+import { Suspense } from 'react';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import Loading from './loading';
 
-const geist = Geist({
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  variable: "--font-geist",
+  variable: "--font-playfair",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
   title: 'Theatre Diary',
   description: 'Track and rate your theatre experiences',
+  viewport: 'width=device-width, initial-scale=1',
   icons: {
     icon: '/favicon.ico',
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const session = await getSession();
+  
   return (
-    <html lang="en" className={geist.variable}>
-      <body className={`antialiased bg-background text-foreground min-h-screen`}>
-        {children}
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
+      <body className="antialiased bg-neutral-50 dark:bg-gray-950">
+        <ErrorBoundary>
+          <Suspense fallback={<Loading />}>
+            <AuthProvider initialSession={session}>
+              <Navigation />
+              <main className="pt-20">
+                {children}
+              </main>
+            </AuthProvider>
+          </Suspense>
+        </ErrorBoundary>
         <Toaster />
       </body>
     </html>

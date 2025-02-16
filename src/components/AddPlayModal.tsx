@@ -1,14 +1,20 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Moon, X, ChevronDown, ChevronUp, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import ImageUrlInputs from './ImageUrlInputs';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { toast } from '@/components/ui/use-toast';
+import { createClient } from '@/lib/supabase';
+import MoonRating from '@/components/ui/moon-rating';
 
 interface AddPlayModalProps {
-  isOpen: boolean;
+  play?: Play | null;
   onClose: () => void;
-  onSubmit: (playData: PlayData) => void;
+  onSubmit: () => void;
 }
 
 export interface PlayData {
@@ -30,53 +36,121 @@ const THEATRE_OPTIONS = [
   'Shakespeare\'s Globe',
 ];
 
-export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModalProps) {
-  const [playData, setPlayData] = useState<PlayData>({
-    title: '',
-    theatre: '',
-    date: new Date().toISOString().split('T')[0],
-    rating: 0,
-    isStandingOvation: false,
-    imageUrls: [''], // Start with just one empty string
-  });
-  
+export default function AddPlayModal({ play, onClose, onSubmit }: AddPlayModalProps) {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(play?.name || '');
+  const [theatre, setTheatre] = useState(play?.theatre || '');
+  const [date, setDate] = useState(play?.date || '');
+  const [rating, setRating] = useState(play?.rating || '');
+  const [isStandingOvation, setIsStandingOvation] = useState(play?.isStandingOvation || false);
+  const [quote, setQuote] = useState(play?.quote || '');
+  const [review, setReview] = useState(play?.review || '');
   const [showImages, setShowImages] = useState(false);
-  const [rating, setRating] = useState<string>("0");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (play) {
+      setOpen(true);
+      setName(play.name);
+      setTheatre(play.theatre);
+      setDate(play.date);
+      setRating(play.rating);
+      setIsStandingOvation(play.isStandingOvation);
+      setQuote(play.quote || '');
+      setReview(play.review || '');
+    } else {
+      setOpen(false);
+      // Reset form
+      setName('');
+      setTheatre('');
+      setDate('');
+      setRating('');
+      setIsStandingOvation(false);
+      setQuote('');
+      setReview('');
+    }
+  }, [play]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Filter out empty image URLs
-    const filteredData = {
-      ...playData,
-      imageUrls: playData.imageUrls.filter(url => url.trim() !== '')
-    };
-    onSubmit(filteredData);
-    setPlayData({
-      title: '',
-      theatre: '',
-      date: new Date().toISOString().split('T')[0],
-      rating: 0,
-      isStandingOvation: false,
-      imageUrls: [''],
-    });
-    onClose();
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to add a play",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const supabase = createClient();
+
+    try {
+      if (play?.id) {
+        // Update existing play
+        const { error } = await supabase
+          .from('plays')
+          .update({
+            name,
+            theatre,
+            date,
+            rating,
+            isStandingOvation,
+            quote,
+            review
+          })
+          .eq('id', play.id);
+
+        if (error) throw error;
+      } else {
+        // Create new play
+        const { error } = await supabase
+          .from('plays')
+          .insert([
+            {
+              name,
+              theatre,
+              date,
+              rating,
+              isStandingOvation,
+              quote,
+              review
+            }
+          ]);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: play?.id ? "Play updated" : "Play added",
+        description: play?.id ? "Your play has been updated successfully." : "Your play has been added successfully.",
+      });
+
+      onSubmit();
+      setOpen(false);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving your play.",
+        variant: "destructive",
+      });
+    }
   };
 
-  if (!isOpen) return null;
+  if (!open) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Add New Play</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) onClose();
+    }}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{play?.id ? 'Edit Play' : 'Add New Play'}</DialogTitle>
+          <DialogDescription>
+            {play?.id ? 'Update the details of your play.' : 'Add a new play to your collection.'}
+          </DialogDescription>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -85,8 +159,8 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
             <input
               type="text"
               required
-              value={playData.title}
-              onChange={(e) => setPlayData({ ...playData, title: e.target.value })}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -98,8 +172,8 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
             <input
               type="text"
               list="theatres"
-              value={playData.theatre}
-              onChange={(e) => setPlayData({ ...playData, theatre: e.target.value })}
+              value={theatre}
+              onChange={(e) => setTheatre(e.target.value)}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <datalist id="theatres">
@@ -116,8 +190,8 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
             <input
               type="date"
               required
-              value={playData.date}
-              onChange={(e) => setPlayData({ ...playData, date: e.target.value })}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
@@ -135,12 +209,10 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
             {showImages && (
               <div className="mt-2">
                 <ImageUrlInputs
-                  urls={playData.imageUrls}
+                  urls={play?.imageUrls || []}
                   onChange={(newUrls) => {
-                    setPlayData({ 
-                      ...playData, 
-                      imageUrls: newUrls 
-                    });
+                    // Assuming you want to update the image URLs
+                    // This is a placeholder implementation
                   }}
                 />
               </div>
@@ -149,42 +221,19 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
 
           <div className="space-y-2">
             <Label>Rating</Label>
-            <div className="flex items-center gap-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setRating((index + 1).toString())}
-                    className={cn(
-                      "p-1 rounded-full transition-colors",
-                      Number(rating) > index 
-                        ? "text-yellow-400" 
-                        : "text-gray-300"
-                    )}
-                  >
-                    <Moon className="w-6 h-6" />
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setRating("Standing Ovation")}
-                className={cn(
-                  "p-1 rounded-full transition-colors",
-                  rating === "Standing Ovation"
-                    ? "text-yellow-400"
-                    : "text-gray-300"
-                )}
-              >
-                <User 
-                  className={cn(
-                    "w-6 h-6",
-                    rating === "Standing Ovation" && "animate-bounce-subtle"
-                  )}
-                />
-              </button>
-            </div>
+            <MoonRating 
+              value={rating === 'standing-ovation' ? 'standing-ovation' : Number(rating) || null}
+              onChange={(newRating) => {
+                if (newRating === 'standing-ovation') {
+                  setRating('standing-ovation');
+                  setIsStandingOvation(true);
+                } else {
+                  setRating(newRating.toString());
+                  setIsStandingOvation(false);
+                }
+              }}
+              size="lg"
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
@@ -199,7 +248,7 @@ export default function AddPlayModal({ isOpen, onClose, onSubmit }: AddPlayModal
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
             >
-              Add Play
+              {play?.id ? 'Update Play' : 'Add Play'}
             </button>
           </div>
         </form>

@@ -1,4 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Theatre Diary
+
+A web application for tracking and rating theatre experiences.
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env` and fill in your Supabase credentials
+4. Run the development server: `npm run dev`
+
+## Environment Variables
+
+Required environment variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+## Deployment
+
+This project is configured for deployment on Vercel. Push to main branch to trigger a deployment.
 
 ## Getting Started
 

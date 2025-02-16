@@ -18,6 +18,21 @@ interface EditPlayModalProps {
   onDelete: (id: number) => void;
 }
 
+interface PlayData {
+  id: number;
+  name: string;
+  theatre: string;
+  date: string;
+  rating: string;
+  isStandingOvation: boolean;
+  image?: string | null;
+  image2?: string | null;
+  image3?: string | null;
+  image4?: string | null;
+  image5?: string | null;
+  synopsis?: string | null;
+}
+
 const THEATRE_OPTIONS = [
   'National Theatre',
   'Old Vic',
@@ -35,28 +50,17 @@ export default function EditPlayModal({
   onUpdate,
   onDelete 
 }: EditPlayModalProps) {
-  const [playData, setPlayData] = useState(play);
+  const [playData, setPlayData] = useState<PlayData>(play);
   const [showImages, setShowImages] = useState(false);
-  const [rating, setRating] = useState(play.rating);
   const { toast } = useToast();
 
-  useEffect(() => {
-    setPlayData(play);
-    setRating(play.rating);
-  }, [play]);
-
-  const [imageUrls, setImageUrlsState] = useState<string[]>(() => {
-    const urls = [
-      play.image,
-      play.image2,
-      play.image3,
-      play.image4,
-      play.image5
-    ].filter((url): url is string => !!url);
-    
-    // Ensure array has enough slots
-    return [...urls, ...Array(5 - urls.length).fill('')];
-  });
+  const [imageUrlsState, setImageUrlsState] = useState<string[]>([
+    play.image,
+    play.image2,
+    play.image3,
+    play.image4,
+    play.image5,
+  ].filter(Boolean) as string[]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +101,20 @@ export default function EditPlayModal({
         variant: 'destructive',
       });
     }
+  };
+
+  // Function to update image URLs
+  const updateImageUrls = (newUrls: string[]) => {
+    setImageUrlsState(newUrls);
+    const [image1, image2, image3, image4, image5] = [...newUrls, '', '', '', '', ''];
+    setPlayData(prev => ({
+      ...prev,
+      image: image1,
+      image2: image2,
+      image3: image3,
+      image4: image4,
+      image5: image5,
+    }));
   };
 
   return (
@@ -165,11 +183,8 @@ export default function EditPlayModal({
             {showImages && (
               <div className="mt-2">
                 <ImageUrlInputs
-                  urls={imageUrls}
-                  onChange={(newUrls) => {
-                    setImageUrlsState(newUrls);
-                    setImageUrls(newUrls);
-                  }}
+                  urls={imageUrlsState}
+                  onChange={updateImageUrls}
                 />
               </div>
             )}
@@ -185,12 +200,11 @@ export default function EditPlayModal({
                     type="button"
                     onClick={() => {
                       const newRating = (index + 1).toString();
-                      setRating(newRating);
                       setPlayData({ ...playData, rating: newRating, isStandingOvation: false });
                     }}
                     className={cn(
                       "p-1 rounded-full transition-colors",
-                      Number(rating) > index 
+                      Number(playData.rating) > index 
                         ? "text-yellow-400" 
                         : "text-gray-300"
                     )}
@@ -202,7 +216,6 @@ export default function EditPlayModal({
               <button
                 type="button"
                 onClick={() => {
-                  setRating('Standing Ovation');
                   setPlayData({ 
                     ...playData, 
                     rating: 'Standing Ovation',
@@ -211,20 +224,19 @@ export default function EditPlayModal({
                 }}
                 className={cn(
                   "p-1 rounded-full transition-colors",
-                  rating === "Standing Ovation"
+                  playData.rating === "Standing Ovation"
                     ? "text-yellow-400"
                     : "text-gray-300"
                 )}
               >
                 <User className={cn(
                   "w-6 h-6",
-                  rating === "Standing Ovation" && "animate-bounce-subtle"
+                  playData.rating === "Standing Ovation" && "animate-bounce-subtle"
                 )} />
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setRating('0');
                   setPlayData({ 
                     ...playData, 
                     rating: '0',

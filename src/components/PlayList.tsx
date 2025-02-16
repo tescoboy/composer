@@ -36,29 +36,70 @@ export default function PlayList() {
     loadPlays();
   }, [loadPlays]);
 
+  const handlePlayUpdate = (updatedPlay: Play) => {
+    setPlays(plays.map(p => p.id === updatedPlay.id ? updatedPlay : p));
+  };
+
+  const handlePlayDelete = (playId: number) => {
+    setPlays(plays.filter(p => p.id !== playId));
+  };
+
   const handleAddPlay = async (playData: PlayData) => {
     try {
+      // Validate input data
+      if (!playData.title) {
+        throw new Error('Play title is required');
+      }
+      if (!playData.date) {
+        throw new Error('Play date is required');
+      }
+
+      console.log('Component: Adding play with data:', playData);
+
       const playToAdd = {
-        name: playData.title,
-        theatre: playData.theatre,
+        name: playData.title.trim(),
+        theatre: playData.theatre?.trim() || '',
         date: playData.date,
-        rating: playData.isStandingOvation ? 'Standing Ovation' : playData.rating.toString(),
-        image: playData.imageUrls[0] || undefined,
-        isStandingOvation: playData.isStandingOvation
+        rating: playData.isStandingOvation ? 'Standing Ovation' : String(playData.rating || 0),
+        image: playData.imageUrls[0]?.trim() || null,
+        image2: playData.imageUrls[1]?.trim() || null,
+        image3: playData.imageUrls[2]?.trim() || null,
+        image4: playData.imageUrls[3]?.trim() || null,
+        image5: playData.imageUrls[4]?.trim() || null,
+        comments: '',
+        synopsis: ''
       };
 
-      const newPlay = await addPlay(playToAdd);
-      setPlays([...plays, newPlay]);
-      setIsModalOpen(false);
-      toast({
-        title: 'Success',
-        description: 'Play added successfully',
-      });
+      console.log('Component: Transformed play data:', playToAdd);
+
+      try {
+        const newPlay = await addPlay(playToAdd);
+        console.log('Component: Successfully added play:', newPlay);
+
+        setPlays([...plays, newPlay]);
+        setIsModalOpen(false);
+        toast({
+          title: 'Success',
+          description: 'Play added successfully',
+        });
+      } catch (serviceError) {
+        console.error('Component: Service error:', serviceError);
+        throw serviceError; // Re-throw to be caught by outer catch
+      }
     } catch (err) {
-      console.error('Failed to add play:', err);
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'An unexpected error occurred while adding the play';
+      
+      console.error('Component: Error details:', {
+        error: err,
+        message: errorMessage,
+        stack: err instanceof Error ? err.stack : undefined
+      });
+
       toast({
         title: 'Error',
-        description: 'Failed to add play',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
@@ -110,14 +151,14 @@ export default function PlayList() {
   return (
     <>
       {/* Upcoming Plays Section */}
-      <section className="mb-8">
+      <section id="upcoming" className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
           Upcoming Shows
         </h2>
         <div className="grid gap-4">
           {upcomingPlays.length > 0 ? (
             upcomingPlays.map(play => (
-              <PlayTile key={play.id} {...play} variant="wide" />
+              <PlayTile key={play.id} {...play} variant="wide" onUpdate={handlePlayUpdate} onDelete={handlePlayDelete} />
             ))
           ) : (
             <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">
@@ -128,14 +169,14 @@ export default function PlayList() {
       </section>
 
       {/* Recently Seen Section */}
-      <section className="mb-8">
+      <section id="recent" className="mb-8">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
           Recently Seen
         </h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {recentlySeenPlays.length > 0 ? (
             recentlySeenPlays.map(play => (
-              <PlayTile key={play.id} {...play} />
+              <PlayTile key={play.id} {...play} onUpdate={handlePlayUpdate} onDelete={handlePlayDelete} />
             ))
           ) : (
             <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">
@@ -147,20 +188,20 @@ export default function PlayList() {
 
       {/* Unrated Plays Section */}
       {unratedPlays.length > 0 && (
-        <section className="mb-8">
+        <section id="unrated" className="mb-8">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
             Unrated Plays
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {unratedPlays.map(play => (
-              <PlayTile key={play.id} {...play} />
+              <PlayTile key={play.id} {...play} onUpdate={handlePlayUpdate} onDelete={handlePlayDelete} />
             ))}
           </div>
         </section>
       )}
 
       {/* Hall of Fame/Shame Section */}
-      <section className="mb-8">
+      <section id="hall-of-fame" className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
             Hall of {showShame ? 'Shame' : 'Fame'}
@@ -177,7 +218,7 @@ export default function PlayList() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {(showShame ? hallOfShamePlays : hallOfFamePlays).length > 0 ? (
             (showShame ? hallOfShamePlays : hallOfFamePlays).map(play => (
-              <PlayTile key={play.id} {...play} />
+              <PlayTile key={play.id} {...play} onUpdate={handlePlayUpdate} onDelete={handlePlayDelete} />
             ))
           ) : (
             <div className="p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md">

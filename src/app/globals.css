@@ -5,7 +5,10 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 240 10% 3.9%;
+    --font-playfair: var(--font-playfair);
+    --font-inter: var(--font-inter);
+    --border: 214.3 31.8% 91.4%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
     --input: 214.3 31.8% 91.4%;
@@ -13,8 +16,9 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --border: 217.2 32.6% 17.5%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --input: 217.2 32.6% 17.5%;
@@ -24,9 +28,104 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-neutral-200 dark:border-neutral-800;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s infinite;
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10%);
+    }
+  }
+}
+
+.prose {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+.prose p:first-of-type::first-letter {
+  @apply float-left text-5xl font-bold mr-3 mt-1;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-indigo-600 pl-4 italic my-4;
+}
+
+.prose p {
+  @apply mb-4;
+}
+
+.prose strong {
+  @apply font-bold;
+}
+
+.prose em {
+  @apply italic;
+}
+
+.prose ul {
+  @apply list-disc pl-6 mb-4;
+}
+
+.prose ul li {
+  @apply mb-2;
+}
+
+.prose blockquote {
+  @apply text-2xl italic font-serif text-center mx-auto max-w-3xl py-8 px-4 relative;
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.text-shadow-lg {
+  text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.auth-container {
+  width: 100% !important;
+}
+
+.auth-button {
+  width: 100% !important;
+  height: 42px !important;
+  background-color: white !important;
+  color: #374151 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border-radius: 6px !important;
+  border: 1px solid #E5E7EB !important;
+  transition: all 0.2s !important;
+}
+
+.auth-button:hover {
+  background-color: #F9FAFB !important;
+  border-color: #D1D5DB !important;
+}
+
+.dark .auth-button {
+  background-color: #1F2937 !important;
+  color: #F9FAFB !important;
+  border-color: #374151 !important;
+}
+
+.dark .auth-button:hover {
+  background-color: #374151 !important;
+  border-color: #4B5563 !important;
 }
