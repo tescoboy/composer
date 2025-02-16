@@ -210,10 +210,16 @@ export default function AddPlayModal({ play, onClose, onSubmit }: AddPlayModalPr
             {showImages && (
               <div className="mt-2">
                 <ImageUrlInputs
-                  urls={play?.imageUrls || []}
+                  urls={[
+                    play?.image1 || '',
+                    play?.image2 || '',
+                    play?.image3 || '',
+                    play?.image4 || '',
+                    play?.image5 || ''
+                  ].filter(Boolean)}
                   onChange={(newUrls) => {
-                    // Assuming you want to update the image URLs
-                    // This is a placeholder implementation
+                    // Handle the image updates
+                    // This will be implemented when we add image upload functionality
                   }}
                 />
               </div>
