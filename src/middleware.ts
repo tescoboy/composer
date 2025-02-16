@@ -11,21 +11,13 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public (public files)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-
-  // Refresh the session if it exists
-  const { data: { session } } = await supabase.auth.getSession();
-
-  // Optional: Protect routes that require authentication
-  if (!session && req.nextUrl.pathname.startsWith('/protected')) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
-
+  await supabase.auth.getSession();
   return res;
 } 

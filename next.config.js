@@ -10,10 +10,13 @@ const nextConfig = {
     domains: ['rlvpxvwbhfhknpqhxdup.supabase.co'],
   },
   typescript: {
-    ignoreBuildErrors: true // Temporarily set to true for deployment
+    ignoreBuildErrors: true
   },
   eslint: {
-    ignoreDuringBuilds: true // Temporarily set to true for deployment
+    ignoreDuringBuilds: true
+  },
+  experimental: {
+    serverActions: true
   }
 }
 

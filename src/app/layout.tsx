@@ -21,13 +21,14 @@ const inter = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Theatre Diary',
   description: 'Track and rate your theatre experiences',
-  viewport: 'width=device-width, initial-scale=1',
-  icons: {
-    icon: '/favicon.ico',
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default async function RootLayout({
