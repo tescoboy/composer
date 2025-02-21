@@ -10,13 +10,9 @@ export default function LoginPage() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const supabase = createClient();
-  const [redirectUrl, setRedirectUrl] = useState('');
 
   useEffect(() => {
     setIsMounted(true);
-    // Set redirect URL based on environment
-    const url = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    setRedirectUrl(`${url}/auth/callback`);
   }, []);
 
   if (!isMounted) {
@@ -55,7 +51,7 @@ export default function LoginPage() {
             }}
             theme="dark"
             providers={['google']}
-            redirectTo={redirectUrl}
+            redirectTo="https://composer-qv2y.vercel.app/auth/callback"
             onlyThirdPartyProviders
             view="sign_in"
           />

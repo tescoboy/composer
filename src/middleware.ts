@@ -6,10 +6,19 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession();
+  try {
+    // Refresh session if expired
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      throw error;
+    }
 
-  return res;
+    return res;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return res;
+  }
 }
 
 export const config = {

@@ -10,10 +10,18 @@ export async function GET(request: Request) {
     const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
-    // Exchange the code for a session
-    await supabase.auth.exchangeCodeForSession(code);
+    try {
+      // Exchange the code for a session
+      await supabase.auth.exchangeCodeForSession(code);
+      
+      // Redirect to the home page after successful authentication
+      return NextResponse.redirect(new URL('/', requestUrl.origin));
+    } catch (error) {
+      console.error('Auth error:', error);
+      return NextResponse.redirect(new URL('/login', requestUrl.origin));
+    }
   }
 
-  // URL to redirect to after sign in process completes
-  return NextResponse.redirect(requestUrl.origin);
+  // If no code, redirect to login
+  return NextResponse.redirect(new URL('/login', requestUrl.origin));
 } 
