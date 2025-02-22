@@ -3,68 +3,39 @@
 import Link from 'next/link';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRouter } from 'next/navigation';
 
 export default function Navigation({ session }: { session: Session | null }) {
   const router = useRouter();
-  console.log('Navigation: Rendering with session:', session?.user?.id);
-
-  const handleSignOut = async () => {
-    console.log('Navigation: Starting sign out');
-    await supabase.auth.signOut();
-    console.log('Navigation: Signed out, refreshing page');
-    router.refresh();
-  };
 
   const handleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
+      }
     });
+  };
 
-    if (error) {
-      console.error('Sign in error:', error.message);
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
+    <nav className="fixed top-0 left-0 right-0 bg-white border-b">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="text-xl font-bold">
-            Theatre Diary
-          </Link>
+          <Link href="/" className="font-bold">Theatre Diary</Link>
 
           <div>
             {session ? (
               <div className="flex items-center gap-4">
-                <Avatar>
-                  <AvatarImage src={session.user?.user_metadata?.avatar_url} />
-                  <AvatarFallback>
-                    {session.user?.email?.[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  onClick={handleSignOut}
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Sign Out
-                </button>
+                <span>{session.user.email}</span>
+                <button onClick={handleSignOut}>Sign Out</button>
               </div>
             ) : (
-              <button
-                onClick={handleSignIn}
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Sign In with Google
-              </button>
+              <button onClick={handleSignIn}>Sign In with Google</button>
             )}
           </div>
         </div>
