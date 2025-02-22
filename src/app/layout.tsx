@@ -3,12 +3,8 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster"
 import Navigation from "@/components/Navigation";
-import { AuthProvider } from "@/components/providers/AuthProvider";
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { Suspense } from 'react';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import Loading from './loading';
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -32,22 +28,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  console.log('Root Layout: Checking session');
+  
   const supabase = createServerComponentClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session }, error } = await supabase.auth.getSession();
+
+  if (error) {
+    console.error('Root Layout: Session error:', error);
+  }
+
+  console.log('Root Layout: Session state:', session ? 'Logged in' : 'Not logged in');
 
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
-      <body className="antialiased bg-neutral-50 dark:bg-gray-950">
-        <ErrorBoundary>
-          <Suspense fallback={<Loading />}>
-            <AuthProvider initialSession={session}>
-              <Navigation />
-              <main className="pt-20">
-                {children}
-              </main>
-            </AuthProvider>
-          </Suspense>
-        </ErrorBoundary>
+      <body className="antialiased bg-gray-50">
+        <Navigation session={session} />
+        <main className="pt-16">
+          {children}
+        </main>
         <Toaster />
       </body>
     </html>

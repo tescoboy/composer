@@ -2,17 +2,16 @@
 
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { createClient } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
-  const supabase = createClient();
-
+  console.log('Login Page: Rendering login page');
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Welcome Back</h1>
-          <p className="mt-2 text-gray-600">Sign in to continue</p>
+          <h1 className="text-3xl font-bold">Sign In</h1>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow">
