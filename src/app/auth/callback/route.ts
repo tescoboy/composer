@@ -6,32 +6,35 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
-  console.log('Auth Callback: Starting auth callback handling');
-  console.log('Auth Callback: URL:', requestUrl.toString());
+  console.log('------- Auth Callback Started -------');
+  console.log('URL:', requestUrl.toString());
 
   const code = requestUrl.searchParams.get('code');
   if (!code) {
-    console.log('Auth Callback: No code found, redirecting to login');
+    console.log('No code found in URL, redirecting to login');
     return NextResponse.redirect(new URL('/login', requestUrl.origin));
   }
 
   try {
-    console.log('Auth Callback: Code found, exchanging for session');
+    console.log('Code found, creating Supabase client');
     const supabase = createRouteHandlerClient({ cookies });
     
+    console.log('Exchanging code for session...');
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (error) {
-      console.error('Auth Callback: Error exchanging code:', error);
+      console.log('Error exchanging code:', error.message);
       throw error;
     }
 
-    console.log('Auth Callback: Session created successfully:', data.session?.user?.id);
-    console.log('Auth Callback: Redirecting to home page');
+    console.log('Session created for user:', data.session?.user?.id);
+    console.log('Redirecting to home page');
     
     return NextResponse.redirect(new URL('/', requestUrl.origin));
   } catch (error) {
-    console.error('Auth Callback: Fatal error:', error);
+    console.log('Auth error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.redirect(new URL('/login', requestUrl.origin));
+  } finally {
+    console.log('------- Auth Callback Ended -------');
   }
 } 
