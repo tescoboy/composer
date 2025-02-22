@@ -18,13 +18,20 @@ export default function Navigation({ session }: { session: Session | null }) {
   };
 
   const handleSignIn = async () => {
-    console.log('Navigation: Starting Google sign in');
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     });
+
+    if (error) {
+      console.error('Sign in error:', error.message);
+    }
   };
 
   return (
