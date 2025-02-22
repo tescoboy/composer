@@ -4,16 +4,27 @@ import Link from 'next/link';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Navigation({ session }: { session: Session | null }) {
   const router = useRouter();
-  console.log('Navigation: Rendering with session:', session?.user?.id);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        router.push('/');
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/login');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   const handleSignOut = async () => {
-    console.log('Navigation: Starting sign out');
     await supabase.auth.signOut();
-    console.log('Navigation: Signed out, refreshing page');
-    router.refresh();
   };
 
   return (

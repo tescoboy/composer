@@ -11,7 +11,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     detectSessionInUrl: true,
-    debug: process.env.NODE_ENV === 'development'
   },
 });
 

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { GOOGLE_AUTH_CONFIG } from '@/lib/auth-config';
 
 export default function GoogleSignIn() {
   const [isLoading, setIsLoading] = useState(false);
@@ -10,18 +9,14 @@ export default function GoogleSignIn() {
   const handleSignIn = async () => {
     try {
       setIsLoading(true);
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: GOOGLE_AUTH_CONFIG.queryParams,
-          scopes: GOOGLE_AUTH_CONFIG.scopes.join(' ')
-        }
+        },
       });
 
       if (error) throw error;
-      
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -35,14 +30,7 @@ export default function GoogleSignIn() {
       disabled={isLoading}
       className="flex items-center justify-center gap-2 bg-white text-gray-800 px-4 py-2 rounded-lg shadow hover:bg-gray-50 disabled:opacity-50"
     >
-      {isLoading ? (
-        <span>Connecting...</span>
-      ) : (
-        <>
-          <GoogleIcon className="w-5 h-5" />
-          <span>Sign in with Google</span>
-        </>
-      )}
+      {isLoading ? 'Connecting...' : 'Sign in with Google'}
     </button>
   );
 }
