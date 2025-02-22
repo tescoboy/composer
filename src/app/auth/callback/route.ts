@@ -13,8 +13,17 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    await supabase.auth.exchangeCodeForSession(code);
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+    
+    // Exchange code for session
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error || !session) {
+      throw error;
+    }
+
+    // Redirect with cookies set
     return NextResponse.redirect(new URL('/', requestUrl.origin));
   } catch (error) {
     console.error('Auth error:', error);

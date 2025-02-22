@@ -3,8 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Create a single instance that will be reused
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Create a single instance with proper config
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    flowType: 'pkce',
+    autoRefreshToken: true,
+    persistSession: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    detectSessionInUrl: true,
+    debug: process.env.NODE_ENV === 'development'
+  },
+});
 
 // Add a simple test function to verify connection
 export const testSupabaseConnection = async () => {
