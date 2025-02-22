@@ -4,22 +4,31 @@ import Link from 'next/link';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Navigation({ session }: { session: Session | null }) {
   const router = useRouter();
 
-  const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+  // Listen for auth state changes
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
+      if (event === 'SIGNED_IN') {
+        router.push('/');
+        router.refresh();
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/login');
+        router.refresh();
       }
     });
-  };
+
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.refresh();
   };
 
   return (
@@ -32,10 +41,20 @@ export default function Navigation({ session }: { session: Session | null }) {
             {session ? (
               <div className="flex items-center gap-4">
                 <span>{session.user.email}</span>
-                <button onClick={handleSignOut}>Sign Out</button>
+                <button 
+                  onClick={handleSignOut}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Sign Out
+                </button>
               </div>
             ) : (
-              <button onClick={handleSignIn}>Sign In with Google</button>
+              <Link 
+                href="/login"
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                Sign In
+              </Link>
             )}
           </div>
         </div>
