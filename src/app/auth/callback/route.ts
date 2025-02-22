@@ -14,19 +14,37 @@ export async function GET(request: Request) {
       // Exchange the code for a session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Session exchange error:', error);
+        throw error;
+      }
 
-      // Add console log to debug
-      console.log('Auth success, redirecting to home');
+      console.log('Auth success, session:', data.session?.user?.id);
       
-      // Redirect to the home page after successful authentication
-      return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL));
+      // Force redirect to home page
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: '/',
+        },
+      });
     } catch (error) {
       console.error('Auth error:', error);
-      return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_SITE_URL));
+      // Force redirect to login page
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: '/login',
+        },
+      });
     }
   }
 
-  // If no code, redirect to login
-  return NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_SITE_URL));
+  // No code, redirect to login
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: '/login',
+    },
+  });
 } 
