@@ -1,37 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { createClient } from '@/lib/supabase';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white font-playfair">
-            Welcome to Theatre Diary
-          </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Sign in to track your theatre experiences
-          </p>
+          <h1 className="text-3xl font-bold">Welcome Back</h1>
+          <p className="mt-2 text-gray-600">Sign in to continue</p>
         </div>
-        
-        <div className="mt-8 bg-white dark:bg-gray-800 py-8 px-4 shadow-xl rounded-lg sm:px-10">
+
+        <div className="bg-white p-8 rounded-lg shadow">
           <Auth
             supabaseClient={supabase}
             appearance={{
@@ -44,16 +28,10 @@ export default function LoginPage() {
                   },
                 },
               },
-              className: {
-                container: 'auth-container',
-                button: 'auth-button',
-              },
             }}
-            theme="dark"
             providers={['google']}
-            redirectTo="https://composer-qv2y.vercel.app/auth/callback"
+            redirectTo="/auth/callback"
             onlyThirdPartyProviders
-            view="sign_in"
           />
         </div>
       </div>

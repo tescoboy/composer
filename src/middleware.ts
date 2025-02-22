@@ -5,20 +5,8 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
-
-  try {
-    // Refresh session if expired
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    if (error) {
-      throw error;
-    }
-
-    return res;
-  } catch (error) {
-    console.error('Middleware error:', error);
-    return res;
-  }
+  await supabase.auth.getSession();
+  return res;
 }
 
 export const config = {
