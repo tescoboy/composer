@@ -1,72 +1,67 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/components/providers/AuthProvider';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { User } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
 
-export default function Navigation() {
-  const { user, signOut } = useAuth();
+export default function Navigation({ session }: { session: Session | null }) {
+  const router = useRouter();
+  console.log('Navigation: Rendering with session:', session?.user?.id);
+
+  const handleSignOut = async () => {
+    console.log('Navigation: Starting sign out');
+    await supabase.auth.signOut();
+    console.log('Navigation: Signed out, refreshing page');
+    router.refresh();
+  };
+
+  const handleSignIn = async () => {
+    console.log('Navigation: Starting Google sign in');
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center h-20">
-          <Link 
-            href="/" 
-            className="text-xl font-playfair font-bold text-gray-900 dark:text-white"
-          >
+        <div className="flex justify-between items-center h-16">
+          <Link href="/" className="text-xl font-bold">
             Theatre Diary
           </Link>
-          
-          <div className="flex items-center gap-4">
-            {user ? (
-              <UserButton user={user} signOut={signOut} />
+
+          <div>
+            {session ? (
+              <div className="flex items-center gap-4">
+                <Avatar>
+                  <AvatarImage src={session.user?.user_metadata?.avatar_url} />
+                  <AvatarFallback>
+                    {session.user?.email?.[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Sign Out
+                </button>
+              </div>
             ) : (
-              <Link
-                href="/login"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              <button
+                onClick={handleSignIn}
+                className="text-sm text-gray-600 hover:text-gray-900"
               >
-                Sign In
-              </Link>
+                Sign In with Google
+              </button>
             )}
           </div>
         </div>
       </div>
     </nav>
-  );
-}
-
-function UserButton({ user, signOut }: { user: User; signOut: () => Promise<void> }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2">
-        <Avatar>
-          <AvatarImage src={user.user_metadata.avatar_url} />
-          <AvatarFallback>
-            {user.email?.charAt(0).toUpperCase() || 'U'}
-          </AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>
-          {user.user_metadata.full_name || user.email?.split('@')[0]}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 } 
