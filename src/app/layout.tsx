@@ -28,26 +28,28 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log('Root Layout: Checking session');
-  
   const supabase = createServerComponentClient({ cookies });
-  const { data: { session }, error } = await supabase.auth.getSession();
+  
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Session error:', error);
+    }
 
-  if (error) {
-    console.error('Root Layout: Session error:', error);
+    return (
+      <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
+        <body className="antialiased bg-gray-50">
+          <Navigation session={session} />
+          <main className="pt-16">
+            {children}
+          </main>
+          <Toaster />
+        </body>
+      </html>
+    );
+  } catch (error) {
+    console.error('Layout error:', error);
+    return null;
   }
-
-  console.log('Root Layout: Session state:', session ? 'Logged in' : 'Not logged in');
-
-  return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`}>
-      <body className="antialiased bg-gray-50">
-        <Navigation session={session} />
-        <main className="pt-16">
-          {children}
-        </main>
-        <Toaster />
-      </body>
-    </html>
-  );
 }

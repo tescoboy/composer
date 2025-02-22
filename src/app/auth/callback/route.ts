@@ -7,32 +7,46 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   console.log('------- Auth Callback Started -------');
-  console.log('URL:', requestUrl.toString());
 
   const code = requestUrl.searchParams.get('code');
   if (!code) {
-    console.log('No code found in URL, redirecting to login');
+    console.log('No code found, redirecting to login');
     return NextResponse.redirect(new URL('/login', requestUrl.origin));
   }
 
   try {
-    console.log('Code found, creating Supabase client');
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
     console.log('Exchanging code for session...');
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code);
     
-    if (error) {
-      console.log('Error exchanging code:', error.message);
+    if (error || !session) {
+      console.log('Session exchange failed:', error?.message);
       throw error;
     }
 
-    console.log('Session created for user:', data.session?.user?.id);
-    console.log('Redirecting to home page');
+    console.log('Session created for user:', session.user.id);
     
-    return NextResponse.redirect(new URL('/', requestUrl.origin));
+    // Set cookie and redirect
+    const response = NextResponse.redirect(new URL('/', requestUrl.origin));
+    
+    // Ensure cookies are set
+    response.cookies.set('sb-access-token', session.access_token, {
+      path: '/',
+      secure: true,
+      sameSite: 'lax',
+    });
+    
+    response.cookies.set('sb-refresh-token', session.refresh_token!, {
+      path: '/',
+      secure: true,
+      sameSite: 'lax',
+    });
+
+    return response;
   } catch (error) {
-    console.log('Auth error:', error instanceof Error ? error.message : 'Unknown error');
+    console.log('Auth error:', error);
     return NextResponse.redirect(new URL('/login', requestUrl.origin));
   } finally {
     console.log('------- Auth Callback Ended -------');
